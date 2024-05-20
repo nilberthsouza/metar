@@ -23,10 +23,14 @@
     <div class="controls">
         <label for="cabeceira">Número da Cabeceira:</label>
         <input type="text" id="cabeceira" value="09">
+        <label for="anguloPista">Ângulo da Pista em relação ao Norte (graus):</label>
+        <input type="number" id="anguloPista" value="0">
+        <label for="vento">Vento (ângulo/velocidade, ex: 050/5):</label>
+        <input type="text" id="vento" value="050/5">
         <button onclick="desenharPista()">Desenhar Pista</button>
     </div>
     <div class="pista-container">
-        <canvas id="meuCanvas" width="400" height="800"></canvas>
+        <canvas id="meuCanvas" width="800" height="800"></canvas>
     </div>
 
     <script>
@@ -34,19 +38,38 @@
             const canvas = document.getElementById('meuCanvas');
             const ctx = canvas.getContext('2d');
 
-            const cabeceira = document.getElementById('cabeceira').value;
+            const cabeceira = parseInt(document.getElementById('cabeceira').value);
+            const anguloPista = parseFloat(document.getElementById('anguloPista').value);
+            const vento = document.getElementById('vento').value;
+
+            // Calcular a cabeceira oposta
+            let cabeceiraOposta = (cabeceira + 18) % 36;
+            if (cabeceiraOposta === 0) {
+                cabeceiraOposta = 36;
+            }
+            // Adicionar zero à esquerda se for menor que 10
+            const cabeceiraStr = cabeceira < 10 ? `0${cabeceira}` : `${cabeceira}`;
+            const cabeceiraOpostaStr = cabeceiraOposta < 10 ? `0${cabeceiraOposta}` : `${cabeceiraOposta}`;
 
             // Limpar o canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Desenhar o retângulo da pista
-            const pistaX = 50;
-            const pistaY = 0;
+            // Coordenadas da pista
+            const centroX = canvas.width / 2;
+            const centroY = canvas.height / 2;
             const pistaWidth = 300;
             const pistaHeight = 800;
 
+            // Salvar o estado do contexto antes de rotacionar
+            ctx.save();
+            // Mover o contexto para o centro da pista
+            ctx.translate(centroX, centroY);
+            // Rotacionar o contexto pelo ângulo da pista em relação ao norte
+            ctx.rotate((anguloPista - 90) * Math.PI / 180);
+
+            // Desenhar o retângulo da pista
             ctx.fillStyle = 'black';
-            ctx.fillRect(pistaX, pistaY, pistaWidth, pistaHeight);
+            ctx.fillRect(-pistaWidth / 2, -pistaHeight / 2, pistaWidth, pistaHeight);
 
             // Desenhar o número da cabeceira
             ctx.fillStyle = 'white';
@@ -55,14 +78,55 @@
             ctx.textBaseline = 'middle';
 
             // Número na parte superior
-            ctx.fillText(cabeceira, pistaX + pistaWidth / 2, pistaY + 100);
+            ctx.fillText(cabeceiraStr, 0, -pistaHeight / 2 + 100);
 
-            // Número invertido na parte inferior
+            // Número invertido na parte inferior (cabeceira oposta)
             ctx.save();
-            ctx.translate(pistaX + pistaWidth / 2, pistaY + pistaHeight - 100);
             ctx.rotate(Math.PI);
-            ctx.fillText(cabeceira, 0, 0);
+            ctx.fillText(cabeceiraOpostaStr, 0, -pistaHeight / 2 + 100);
             ctx.restore();
+
+            // Restaurar o estado do contexto após desenhar a pista
+            ctx.restore();
+
+            // Desenhar o vento
+            if (/^\d{3}\/\d+$/.test(vento)) {
+                const [anguloStr, velocidadeStr] = vento.split('/');
+                const anguloVento = parseInt(anguloStr);
+                const velocidade = parseInt(velocidadeStr);
+
+                const rad = (anguloVento - 90) * (Math.PI / 180); // Ajustar para coordenadas de canvas
+                const comprimentoVento = 100; // Comprimento da seta do vento
+
+                const xFim = centroX + comprimentoVento * Math.cos(rad);
+                const yFim = centroY + comprimentoVento * Math.sin(rad);
+
+                ctx.strokeStyle = 'green';
+                ctx.lineWidth = 3;
+
+                ctx.beginPath();
+                ctx.moveTo(centroX, centroY);
+                ctx.lineTo(xFim, yFim);
+                ctx.stroke();
+
+                // Desenhar a cabeça da seta
+                const setaTamanho = 10;
+                const setaAngulo = Math.PI / 6;
+
+                ctx.beginPath();
+                ctx.moveTo(xFim, yFim);
+                ctx.lineTo(
+                    xFim - setaTamanho * Math.cos(rad - setaAngulo),
+                    yFim - setaTamanho * Math.sin(rad - setaAngulo)
+                );
+                ctx.lineTo(
+                    xFim - setaTamanho * Math.cos(rad + setaAngulo),
+                    yFim - setaTamanho * Math.sin(rad + setaAngulo)
+                );
+                ctx.closePath();
+                ctx.fillStyle = 'green';
+                ctx.fill();
+            }
         }
 
         // Desenhar a pista pela primeira vez ao carregar a página

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pista de Pouso e Decolagem</title>
+    <style>
+        .pista-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        canvas {
+            border: 1px solid black;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <label for="cabeceira">Número da Cabeceira:</label>
+        <input type="text" id="cabeceira" value="09">
+        <button onclick="desenharPista()">Desenhar Pista</button>
+    </div>
+    <div class="pista-container">
+        <canvas id="meuCanvas" width="400" height="800"></canvas>
+    </div>
+
+    <script>
+        function desenharPista() {
+            const canvas = document.getElementById('meuCanvas');
+            const ctx = canvas.getContext('2d');
+
+            const cabeceira = document.getElementById('cabeceira').value;
+
+            // Limpar o canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Desenhar o retângulo da pista
+            const pistaX = 50;
+            const pistaY = 0;
+            const pistaWidth = 300;
+            const pistaHeight = 800;
+
+            ctx.fillStyle = 'black';
+            ctx.fillRect(pistaX, pistaY, pistaWidth, pistaHeight);
+
+            // Desenhar o número da cabeceira
+            ctx.fillStyle = 'white';
+            ctx.font = '48px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Número na parte superior
+            ctx.fillText(cabeceira, pistaX + pistaWidth / 2, pistaY + 100);
+
+            // Número invertido na parte inferior
+            ctx.save();
+            ctx.translate(pistaX + pistaWidth / 2, pistaY + pistaHeight - 100);
+            ctx.rotate(Math.PI);
+            ctx.fillText(cabeceira, 0, 0);
+            ctx.restore();
+        }
+
+        // Desenhar a pista pela primeira vez ao carregar a página
+        desenharPista();
+    </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+import requests
+from bs4 import BeautifulSoup
+
+def get_metar(codigo_icao):
+    url = f"https://aisweb.decea.mil.br/?i=aerodromos&codigo={codigo_icao}"
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        return None
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    metar_paragraph = soup.find('p', text=lambda t: t and t.startswith('METAR'))
+
+    if metar_paragraph:
+        return metar_paragraph.text.strip()
+    else:
+        return None
+
+# Exemplo de uso
+codigo_icao = "sbcf"
+metar_info = get_metar(codigo_icao)
+if metar_info:
+    print(metar_info)
+    
+else:
+    print(f"Não foi possível encontrar o METAR para o código ICAO {codigo_icao}.")
+
+
+
+import re
+
+def converter_qnh(metar_info):
+    # Encontrar o padrão 'Q' seguido de 4 dígitos
+    match = re.search(r'Q(\d{4})', texto)
+    if match:
+        # Extrair o número de 4 dígitos
+        QNH = int(match.group(1))
+        # Converter de hPa para inHg
+        inHg = QNH * 0.02953
+        return QNH, inHg
+    else:
+        return None, None
+
+# Exemplo de uso
+texto = "O relatório metar indica Q1017 para hoje."
+QNH, inHg = converter_qnh(texto)
+
+if QNH is not None:
+    print(f"O valor de QNH é {QNH} hPa, que equivale a {inHg:.2f} inHg.")
+else:
+    print("Nenhum valor QNH foi encontrado no texto.")
+

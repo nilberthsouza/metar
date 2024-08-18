@@ -16,7 +16,6 @@ def get_metar(codigo_icao):
     else:
         return None
 
-# Exemplo de uso
 codigo_icao = "sbcf"
 metar_info = get_metar(codigo_icao)
 if metar_info:
@@ -30,18 +29,14 @@ else:
 import re
 
 def converter_qnh(metar_info):
-    # Encontrar o padrão 'Q' seguido de 4 dígitos
     match = re.search(r'Q(\d{4})', texto)
     if match:
-        # Extrair o número de 4 dígitos
         QNH = int(match.group(1))
-        # Converter de hPa para inHg
         inHg = QNH * 0.02953
         return QNH, inHg
     else:
         return None, None
 
-# Exemplo de uso
 texto = "O relatório metar indica Q1017 para hoje."
 QNH, inHg = converter_qnh(texto)
 
